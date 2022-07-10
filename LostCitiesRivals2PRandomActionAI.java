@@ -9,15 +9,22 @@ import java.util.Random;
 public class LostCitiesRivals2PRandomActionAI implements LostCitiesRivals2PInput {
 	int count = 0;
 
+	byte [] bestExp ;
+	int maxExpedition = 0, expTotal = 0;
 
 
 
 	private Random rng = new Random();
+
+	int countExp = 0;
 	
 	@Override
 	public int nextMove(LostCitiesRivals2PGameState gs) throws CloneNotSupportedException {
-		count ++;
 		LostCitiesRivals2PGameState cloned = gs.deepCopyUsingSerialization();
+
+
+		count ++;
+
 
 		byte [] currentCards = cloned.getLastCardsAddedToDisplay();
 		if (count ==1 ){
@@ -43,19 +50,22 @@ public class LostCitiesRivals2PRandomActionAI implements LostCitiesRivals2PInput
 			}
 			System.out.println(max);
 		}
-		else if (count >1)
-			for (int i = 0; i <= 2; i++){
+		System.out.println("flag for my method \n");
+		if ( cloned.checkExpeditionsForUs()!= null){
+			System.out.println(Arrays.toString(cloned.checkExpeditionsForUs()));
 
-			}
+		}
+
+
 
 		if (cloned.getGameStatus()==LostCitiesRivals2PGameState.GameStatus.REVEAL){
 
-			System.out.println(count);
+
 			return 0;
 		}
 			 // 50% uncover card 50% bet 1
 		else if (cloned.getGameStatus()==LostCitiesRivals2PGameState.GameStatus.BET){
-			System.out.println(count);
+
 
 			return -1;}// 50% increase bet / 50% drop out
 		else if (cloned.getGameStatus()==LostCitiesRivals2PGameState.GameStatus.SELECT)

@@ -4,6 +4,10 @@ import java.util.Arrays;
 // This class stores the game state
 public class LostCitiesRivals2PGameState implements Cloneable, Serializable {
 	// GAME CONSTANTS --- BEST NOT TO CHANGE THEM!
+	byte[] currentExpedition;
+	int maxExpedition = 0;
+	int maxExpeditionNumber = 0;
+	int expTotal = 0;
 
 	// NOTE: to use byte, then it should be NUM_EXPEDITIONS*MAX_VALUE <= 127
 	public static final int NUM_EXPEDITIONS = 5; 	// how many expeditions
@@ -184,6 +188,7 @@ public class LostCitiesRivals2PGameState implements Cloneable, Serializable {
 		}
 		return totalPoints;
 	}
+
 
 	/**
 	 * Prints the state of the game
@@ -620,6 +625,32 @@ public class LostCitiesRivals2PGameState implements Cloneable, Serializable {
 			return null;
 		return Arrays.copyOf(lastCardsAddedToDisplay, lastCardsAddedToDisplay.length);
 	}
+
+	public int [] checkExpeditionsForUs(){
+		int [] best = new int[2];
+		for (int i = 0; i <= 5; i++) {
+			currentExpedition = getExpeditionP1(i);
+			if(currentExpedition.length == 0){
+				continue;
+			}
+			expTotal = 0;
+			for (int j = 0; j < 10; j++) {
+				expTotal += currentExpedition[j];
+			}
+			if (expTotal > maxExpedition){
+				maxExpedition = expTotal;
+				maxExpeditionNumber = i;
+			}
+		}
+		System.out.println("max expedition:" + maxExpedition);
+		System.out.println("max expedition num:" + maxExpeditionNumber);
+		best[0] = maxExpedition;
+		best[1] = maxExpeditionNumber;
+
+		return best;
+
+	}
+
 }
 
 
