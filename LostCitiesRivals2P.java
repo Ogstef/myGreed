@@ -12,7 +12,7 @@ public class LostCitiesRivals2P {
 		LostCitiesRivals2PCardShuffler shuffler = new LostCitiesRivals2PCardShuffler();
 		LostCitiesRivals2PGameState gs = new LostCitiesRivals2PGameState();
 		LostCitiesRivals2PInput console1 = new LostCitiesRivals2PGUI(gs);// new LostCitiesRivals2PInputConsole();
-		LostCitiesRivals2PInput console2 = new LostCitiesRivals2PRandomActionAI();
+		LostCitiesRivals2PInput console2 = new newAi();
 		/*
 		gs.setDisplayCards(shuffler.nextCard(gs.cardsToFillDisplay()));
 		gs.printState();

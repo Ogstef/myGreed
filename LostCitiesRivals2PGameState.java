@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 // This class stores the game state
@@ -629,7 +630,7 @@ public class LostCitiesRivals2PGameState implements Cloneable, Serializable {
 	public int [] checkExpeditionsForUs(){
 		int [] best = new int[2];
 		for (int i = 0; i <= 5; i++) {
-			currentExpedition = getExpeditionP1(i);
+			currentExpedition = getExpeditionP2(i);
 			if(currentExpedition.length == 0){
 				continue;
 			}
@@ -642,13 +643,146 @@ public class LostCitiesRivals2PGameState implements Cloneable, Serializable {
 				maxExpeditionNumber = i;
 			}
 		}
-		System.out.println("max expedition:" + maxExpedition);
-		System.out.println("max expedition num:" + maxExpeditionNumber);
+		//System.out.println("max expedition:" + maxExpedition);
+		//System.out.println("max expedition num:" + maxExpeditionNumber);
 		best[0] = maxExpedition;
 		best[1] = maxExpeditionNumber;
 
 		return best;
 
+	}
+
+	public int worthBetting() {
+		byte [] cardsAvail = getCardsAvailableInDisplay();
+		int bet =0;
+		int [] positions = new int[10];
+		int category=0;
+		int [] myExp = minCardOfEachExpedition(1);
+		for (int y=0; y<getCardsAvailableInDisplay().length;y++) {
+			if ( getCardsAvailableInDisplay()[y] %10 !=0 ){
+				category = getCardsAvailableInDisplay()[y] /10;
+			}
+			else {
+				if ( getCardsAvailableInDisplay()[y] >10) category= getCardsAvailableInDisplay()[y]/10-1;
+				else category=0;
+			}
+			for (int i =0; i <5; i++){
+				if (category==myExp[i]/10 && getCardsAvailableInDisplay()[y]-myExp[i]>0){
+					bet++;
+				}
+			}
+		}
+		return bet;
+	}
+
+
+	//returns which # expedition has the most cards with values of 5 and under. To decide when to start betting and for what.
+	public int expeditionWithMostCardsStartingRounds() {
+		byte[] currentCards = getCardsAvailableInDisplay();
+		int [] cardsToTake = new int[5];
+		for(int i = 0; i<currentCards.length; i++){
+			if (currentCards[i] <= 5)
+				cardsToTake [0] ++;
+			else if (currentCards[i] <=15 && currentCards[i] >10 )
+				cardsToTake[1]++;
+			else if (currentCards[i]<=25 && currentCards[i] >20)
+				cardsToTake[2]++;
+			else if (currentCards[i]<=35  && currentCards[i] >30)
+				cardsToTake[3]++;
+			else if (currentCards[i]<=45 && currentCards[i] >40)
+				cardsToTake[4]++;
+
+		}
+		System.out.println(Arrays.toString(currentCards));
+		int max = -1;
+		for ( int i =0 ; i<5 ; i++){
+			if (cardsToTake[i] > max ) max = i;
+		}
+		return max;
+	}
+
+	public int expeditionWithMostCardsAfterRounds() {
+		byte[] currentCards = getAllCardsShown();
+		int [] cardsToTake = new int[5];
+		for(int i = 0; i<currentCards.length; i++){
+			if (currentCards[i] <= 10 && currentCards[i]>5)
+				cardsToTake [0] ++;
+			else if (currentCards[i] <=20 && currentCards[i] >15 )
+				cardsToTake[1]++;
+			else if (currentCards[i]<=30 && currentCards[i] >25)
+				cardsToTake[2]++;
+			else if (currentCards[i]<=40  && currentCards[i] >35)
+				cardsToTake[3]++;
+			else if (currentCards[i]<=50 && currentCards[i] >45)
+				cardsToTake[4]++;
+
+		}
+		System.out.println(Arrays.toString(currentCards));
+		int max = 0;
+		for ( int i =0 ; i<5 ; i++){
+			if (cardsToTake[i] > max ) max = i;
+		}
+		return max;
+	}
+
+
+
+//	public int numberOfCardsIshouldBetOn(){
+//		byte [] avail = getCardsAvailableInDisplay();
+//
+//
+//	}
+
+
+	//returns an array of all the cards shown on the board
+	public byte [] getAllCardsShown(){
+		byte[] addcards = new byte[getCardsAvailableInDisplay().length + getFutureCardsInDisplay().length];
+		ByteBuffer buff = ByteBuffer.wrap(addcards);
+		buff.put(getCardsAvailableInDisplay());
+		buff.put(getFutureCardsInDisplay());
+		return buff.array();
+	}
+
+	public int[] minCardOfEachExpedition(int player){
+		int [] x = new int[5];
+		byte [] currentExpedition = new byte[10];
+		x = new int[]{1, 11, 21, 31, 41};
+		for (int y =0; y<5; y++) {
+			if (player==1){
+				currentExpedition = getExpeditionP1(y);
+			}
+			else if ( player ==2){
+				currentExpedition = getExpeditionP2(y);
+
+			}
+
+			for (int i = 9; i >= 0; i--) {
+				if (currentExpedition[i] == 1) {
+					x[y] = i + (y * 10 + 1);
+					break;
+				}
+			}
+		}
+		return x;
+	}
+
+	public int categorizeCards (int x){
+		if (x >0 && x<=10){
+			return 0;
+		}
+		else if (x>10 && x<=20){
+			return 1;
+		}
+		else if (x>20 && x<=30){
+			return 2;
+		}
+		else if ( x>30 && x<=40){
+			return 3;
+		}
+		else if ( x>40 && x<=50){
+			return 4;
+		}
+		return 0; // shouldnt reach this.
 	}
 
 }
