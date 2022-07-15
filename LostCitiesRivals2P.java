@@ -11,8 +11,8 @@ public class LostCitiesRivals2P {
 	public static void main(String[] args) throws CloneNotSupportedException {
 		LostCitiesRivals2PCardShuffler shuffler = new LostCitiesRivals2PCardShuffler();
 		LostCitiesRivals2PGameState gs = new LostCitiesRivals2PGameState();
-		LostCitiesRivals2PInput console1 = new LostCitiesRivals2PGUI(gs);// new LostCitiesRivals2PInputConsole();
-		LostCitiesRivals2PInput console2 = new newAi();
+		LostCitiesRivals2PInput console1 = new updateAi();// new LostCitiesRivals2PInputConsole();
+		LostCitiesRivals2PInput console2 = new myAi();
 		/*
 		gs.setDisplayCards(shuffler.nextCard(gs.cardsToFillDisplay()));
 		gs.printState();

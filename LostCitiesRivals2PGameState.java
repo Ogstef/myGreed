@@ -785,6 +785,56 @@ public class LostCitiesRivals2PGameState implements Cloneable, Serializable {
 		return 0; // shouldnt reach this.
 	}
 
+	public int[] heuristicFunction(int p) {
+		int counter = 0;
+		int countSelect = 0;
+		int[] ourSelection = new int[10];
+
+		for (int i = 0; i < 5; i++) {
+			for (int y = 0; y < getCardsAvailableInDisplay().length; y++) {
+				if (getRoundNo()<=2 && categorizeCards(getCardsAvailableInDisplay()[y]) == categorizeCards(minCardOfEachExpedition(2)[i]) &&(getCardsAvailableInDisplay()[y]==1 ||getCardsAvailableInDisplay()[y]==21 ||getCardsAvailableInDisplay()[y]==31 ||getCardsAvailableInDisplay()[y]==41) && (minCardOfEachExpedition(2)[i]==1 || minCardOfEachExpedition(2)[i]==11 || minCardOfEachExpedition(2)[i]==21 || minCardOfEachExpedition(2)[i]==31 || minCardOfEachExpedition(2)[i]==41)){
+					counter ++;
+					ourSelection[countSelect] += (y+1);
+					countSelect++;
+				}
+				else if (getRoundNo() <= 2 && getCardsAvailableInDisplay()[y] != minCardOfEachExpedition(p)[i] && getCardsAvailableInDisplay()[y] - minCardOfEachExpedition(p)[i] < 3 && getCardsAvailableInDisplay()[y] - minCardOfEachExpedition(p)[i] > 0 && categorizeCards(getCardsAvailableInDisplay()[y]) == categorizeCards(minCardOfEachExpedition(p)[i])) {
+
+					counter++;
+					ourSelection[countSelect] += (y + 1);
+					countSelect++;
+
+				} else if (getRoundNo() > 2 && getCardsAvailableInDisplay()[y] != minCardOfEachExpedition(p)[i] && getCardsAvailableInDisplay()[y] - minCardOfEachExpedition(p)[i] < 5 && getCardsAvailableInDisplay()[y] - minCardOfEachExpedition(p)[i] > 0 && categorizeCards(getCardsAvailableInDisplay()[y]) == categorizeCards(minCardOfEachExpedition(p)[i])) {
+					counter++;
+					ourSelection[countSelect] += (y + 1);
+					countSelect++;
+				}
+			}
+
+		}
+		Arrays.sort(ourSelection);
+		int retval=0;
+		for (int digit: ourSelection){
+			retval *=10;
+			retval +=digit;
+		}
+		int disCard=0;
+		int [] opponentsBestCards=new int[5];
+		for (int i=0;i<5;i++){
+			opponentsBestCards[i] = minCardOfEachExpedition(1)[i];
+			for (int y=0; y<getCardsAvailableInDisplay().length;y++){
+				if (opponentsBestCards[i]-getCardsAvailableInDisplay()[y]<5 && categorizeCards(opponentsBestCards[i])== categorizeCards(getCardsAvailableInDisplay()[y])){
+					disCard = y;
+				}
+			}
+		}
+		retval = Integer.parseInt(String.valueOf(retval) +String.valueOf(disCard));
+		int [] whatToDo = new int[]{counter, retval};
+		System.out.println("We are in heuristic \n");
+		System.out.println("This is what to do array" + Arrays.toString(whatToDo));
+		System.out.println("This is our selection" + Arrays.toString(ourSelection));
+		return whatToDo;
+	}
+
 }
 
 

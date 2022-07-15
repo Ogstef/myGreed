@@ -33,65 +33,23 @@ public class myAi implements LostCitiesRivals2PInput {
 
         //Reveal phase -- Needs more information added
         if (cloned.getGameStatus() == LostCitiesRivals2PGameState.GameStatus.REVEAL) {
-            if(gs.getCardsAvailableInDisplay().length <4){
+            if (gs.getCardsAvailableInDisplay().length < 4) {
                 return 0;
-            }
-            else {
-                for(int i = 0; i < gs.getCardsAvailableInDisplay().length; i++){
-                    if((gs.getCardsAvailableInDisplay()[i] >= gs.expeditionWithMostCardsStartingRounds() * 10) && (gs.getCardsAvailableInDisplay()[i] < ((gs.expeditionWithMostCardsStartingRounds()+1)*10))){
-                        counter++;
-                    }
-                }
-                return counter;
+            } else {
+                return gs.heuristicFunction(2)[0];
             }
         }
-
-
         else if (cloned.getGameStatus() == LostCitiesRivals2PGameState.GameStatus.BET) {
-            if ((float) (counter / cloned.getMinAcceptableBet()) > 1.0) {
+            if ((float) (gs.heuristicFunction(2)[0] / gs.getMinAcceptableBet()) > 1.0) {
                 return counter;
-            } else if ((float) (counter / cloned.getMinAcceptableBet()) > 0.6) {
+            } else if ((float) (gs.heuristicFunction(2)[0] / cloned.getMinAcceptableBet()) > 0.6) {
                 return cloned.getMinAcceptableBet();
             } else return -1;
 
         }
-        else if (cloned.getGameStatus()==LostCitiesRivals2PGameState.GameStatus.SELECT){
-            int category;
-            int []ourSelection = new int[10];//random value shouldn't take it.
-            int selection;
-            int countSelect =0;
-            int f=0;
+        else if (cloned.getGameStatus() == LostCitiesRivals2PGameState.GameStatus.SELECT) {
 
-            for (int y = 0; y < 5; y++){
-                for(int i = 0; i < gs.getCardsAvailableInDisplay().length; i++) {
-                    if ( (cloned.getCardsAvailableInDisplay()[i] >= cloned.minCardOfEachExpedition(1)[y]) && (cloned.categorizeCards(cloned.getCardsAvailableInDisplay()[i]) == cloned.categorizeCards(cloned.minCardOfEachExpedition(1)[y])))
-                    {
-
-                        System.out.println("This is the category" + cloned.categorizeCards(cloned.getCardsAvailableInDisplay()[i]));
-                        System.out.println("This is count select" + countSelect);
-                        ourSelection[countSelect] += (i + 1);
-                        countSelect++;
-                        System.out.println("This is count select after add" + countSelect);
-                    }
-//                    else if (cloned.getRoundNo() == 1 ) {
-//                        if ((cloned.getCardsAvailableInDisplay()[i] >= gs.expeditionWithMostCardsStartingRounds() * 10) && (gs.getCardsAvailableInDisplay()[i] < (gs.expeditionWithMostCardsStartingRounds() + 1) * 10) && ) {
-//                            ourSelection += (i + 1);
-//                        }
-
-
-                }
-
-            }
-            Arrays.sort(ourSelection);
-            int retval=0;
-            for (int digit: ourSelection){
-                retval *=10;
-                retval+=digit;
-            }
-            int lastcard=0;
-            retval=Integer.parseInt(String.valueOf(retval)+String.valueOf(lastcard));
-            System.out.println("OUR SELECTION:" + retval);
-            return retval;
+            return gs.heuristicFunction(2)[1];
         }
         return 0;
     }
