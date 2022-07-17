@@ -1,6 +1,10 @@
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.List;
+
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 // This class stores the game state
 public class LostCitiesRivals2PGameState implements Cloneable, Serializable {
@@ -31,6 +35,8 @@ public class LostCitiesRivals2PGameState implements Cloneable, Serializable {
 
 	private byte[] lastCardsAddedToDisplay=null;
 	public byte cardsAddedCounter = 2;
+
+
 	// this is how many points you get for the leftover gold you have at the end (e.g. if 3 then each 3 gold is 1 point)
 
 	// NOTE: Regarding card values  = value + expedition*MAX_VALUE (so should be 1...NUM_EXPEDITIONS*MAX_VALUE)
@@ -50,6 +56,21 @@ public class LostCitiesRivals2PGameState implements Cloneable, Serializable {
 	private int minBet=0;							// keeps track of the minimum bet (if it's a betting round)/ 0 otherwise (which is NOT a valid bet)
 
 	private GameStatus gameStatus;
+
+	public LostCitiesRivals2PGameState(byte[] getCardsAvailableInDisplay, byte[] player1Expeditions, byte[] player2Expeditions){
+
+		}
+	@Override
+	public LostCitiesRivals2PGameState clone() {
+		try {
+			LostCitiesRivals2PGameState clone = (LostCitiesRivals2PGameState) super.clone();
+			clone.setDisplayCards(getCardsAvailableInDisplay());
+			// TODO: copy mutable state here, so the clone can't change the internals of the original
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
+	}
 
 	/**
 	 * Converts a card number into a string (XXC) where XX=card number and C=expedition color
@@ -626,114 +647,6 @@ public class LostCitiesRivals2PGameState implements Cloneable, Serializable {
 			return null;
 		return Arrays.copyOf(lastCardsAddedToDisplay, lastCardsAddedToDisplay.length);
 	}
-
-	public int [] checkExpeditionsForUs(){
-		int [] best = new int[2];
-		for (int i = 0; i <= 5; i++) {
-			currentExpedition = getExpeditionP2(i);
-			if(currentExpedition.length == 0){
-				continue;
-			}
-			expTotal = 0;
-			for (int j = 0; j < 10; j++) {
-				expTotal += currentExpedition[j];
-			}
-			if (expTotal > maxExpedition){
-				maxExpedition = expTotal;
-				maxExpeditionNumber = i;
-			}
-		}
-		//System.out.println("max expedition:" + maxExpedition);
-		//System.out.println("max expedition num:" + maxExpeditionNumber);
-		best[0] = maxExpedition;
-		best[1] = maxExpeditionNumber;
-
-		return best;
-
-	}
-
-	public int worthBetting() {
-		byte [] cardsAvail = getCardsAvailableInDisplay();
-		int bet =0;
-		int [] positions = new int[10];
-		int category=0;
-		int [] myExp = minCardOfEachExpedition(1);
-		for (int y=0; y<getCardsAvailableInDisplay().length;y++) {
-			if ( getCardsAvailableInDisplay()[y] %10 !=0 ){
-				category = getCardsAvailableInDisplay()[y] /10;
-			}
-			else {
-				if ( getCardsAvailableInDisplay()[y] >10) category= getCardsAvailableInDisplay()[y]/10-1;
-				else category=0;
-			}
-			for (int i =0; i <5; i++){
-				if (category==myExp[i]/10 && getCardsAvailableInDisplay()[y]-myExp[i]>0){
-					bet++;
-				}
-			}
-		}
-		return bet;
-	}
-
-
-	//returns which # expedition has the most cards with values of 5 and under. To decide when to start betting and for what.
-	public int expeditionWithMostCardsStartingRounds() {
-		byte[] currentCards = getCardsAvailableInDisplay();
-		int [] cardsToTake = new int[5];
-		for(int i = 0; i<currentCards.length; i++){
-			if (currentCards[i] <= 5)
-				cardsToTake [0] ++;
-			else if (currentCards[i] <=15 && currentCards[i] >10 )
-				cardsToTake[1]++;
-			else if (currentCards[i]<=25 && currentCards[i] >20)
-				cardsToTake[2]++;
-			else if (currentCards[i]<=35  && currentCards[i] >30)
-				cardsToTake[3]++;
-			else if (currentCards[i]<=45 && currentCards[i] >40)
-				cardsToTake[4]++;
-
-		}
-		System.out.println(Arrays.toString(currentCards));
-		int max = -1;
-		for ( int i =0 ; i<5 ; i++){
-			if (cardsToTake[i] > max ) max = i;
-		}
-		return max;
-	}
-
-	public int expeditionWithMostCardsAfterRounds() {
-		byte[] currentCards = getAllCardsShown();
-		int [] cardsToTake = new int[5];
-		for(int i = 0; i<currentCards.length; i++){
-			if (currentCards[i] <= 10 && currentCards[i]>5)
-				cardsToTake [0] ++;
-			else if (currentCards[i] <=20 && currentCards[i] >15 )
-				cardsToTake[1]++;
-			else if (currentCards[i]<=30 && currentCards[i] >25)
-				cardsToTake[2]++;
-			else if (currentCards[i]<=40  && currentCards[i] >35)
-				cardsToTake[3]++;
-			else if (currentCards[i]<=50 && currentCards[i] >45)
-				cardsToTake[4]++;
-
-		}
-		System.out.println(Arrays.toString(currentCards));
-		int max = 0;
-		for ( int i =0 ; i<5 ; i++){
-			if (cardsToTake[i] > max ) max = i;
-		}
-		return max;
-	}
-
-
-
-//	public int numberOfCardsIshouldBetOn(){
-//		byte [] avail = getCardsAvailableInDisplay();
-//
-//
-//	}
-
-
 	//returns an array of all the cards shown on the board
 	public byte [] getAllCardsShown(){
 		byte[] addcards = new byte[getCardsAvailableInDisplay().length + getFutureCardsInDisplay().length];
@@ -742,11 +655,11 @@ public class LostCitiesRivals2PGameState implements Cloneable, Serializable {
 		buff.put(getFutureCardsInDisplay());
 		return buff.array();
 	}
-
+	//returns an array with the minimum card a player has in each of his expeditions, default is the handshake value but
+	//we check for that in our heuristic.
 	public int[] minCardOfEachExpedition(int player){
-		int [] x = new int[5];
 		byte [] currentExpedition = new byte[10];
-		x = new int[]{1, 11, 21, 31, 41};
+		int [] x = new int[]{1, 11, 21, 31, 41};
 		for (int y =0; y<5; y++) {
 			if (player==1){
 				currentExpedition = getExpeditionP1(y);
@@ -782,57 +695,109 @@ public class LostCitiesRivals2PGameState implements Cloneable, Serializable {
 		else if ( x>40 && x<=50){
 			return 4;
 		}
-		return 0; // shouldnt reach this.
+		return -1; // shouldnt reach this.
 	}
 
-	public int[] heuristicFunction(int p) {
+	public int pointCounter(int x)
+	{
+		if ((x <=5 && x>0) || (x<=15 && x>10) || (x <=25 && x>20) || (x <=35 && x >30) || (x <=45 && x >40)) return 1;
+		else if (x <= 50)return 2;
+		return 0;
+	}
+	//Heuristic function, takes parameter p for player, values range from 1-2.
+	// Returns an array of int, first position being the counter of the cards that we want to pick up
+	// the second position having the selection integer for the AI to pick up the cards for when in the select phase
+	// and the last position has the points obtained by picking up the cards.
+
+
+	public int[] heuristic(int p) {
 		int counter = 0;
 		int countSelect = 0;
+		int disCard = 0;
+
 		int[] ourSelection = new int[10];
+		int[] opponentsBestCards = new int[5];
+		int pointsToBeObtained = 0;
+
 
 		for (int i = 0; i < 5; i++) {
-			for (int y = 0; y < getCardsAvailableInDisplay().length; y++) {
-				if (getRoundNo()<=2 && categorizeCards(getCardsAvailableInDisplay()[y]) == categorizeCards(minCardOfEachExpedition(2)[i]) &&(getCardsAvailableInDisplay()[y]==1 ||getCardsAvailableInDisplay()[y]==21 ||getCardsAvailableInDisplay()[y]==31 ||getCardsAvailableInDisplay()[y]==41) && (minCardOfEachExpedition(2)[i]==1 || minCardOfEachExpedition(2)[i]==11 || minCardOfEachExpedition(2)[i]==21 || minCardOfEachExpedition(2)[i]==31 || minCardOfEachExpedition(2)[i]==41)){
-					counter ++;
-					ourSelection[countSelect] += (y+1);
-					countSelect++;
-				}
-				else if (getRoundNo() <= 2 && getCardsAvailableInDisplay()[y] != minCardOfEachExpedition(p)[i] && getCardsAvailableInDisplay()[y] - minCardOfEachExpedition(p)[i] < 3 && getCardsAvailableInDisplay()[y] - minCardOfEachExpedition(p)[i] > 0 && categorizeCards(getCardsAvailableInDisplay()[y]) == categorizeCards(minCardOfEachExpedition(p)[i])) {
 
+			if (p == 1) opponentsBestCards[i] = minCardOfEachExpedition(2)[i];
+			else opponentsBestCards[i] = minCardOfEachExpedition(1)[i];
+
+			for (int y = getCardsAvailableInDisplay().length - 1; y >= 0; y--) {
+				if (getRoundNo() <= 2
+						&& categorizeCards(getCardsAvailableInDisplay()[y]) == categorizeCards(minCardOfEachExpedition(p)[i])
+						&& (getCardsAvailableInDisplay()[y] == 1
+						|| getCardsAvailableInDisplay()[y] == 21
+						| getCardsAvailableInDisplay()[y] == 31
+						|| getCardsAvailableInDisplay()[y] == 41)
+						&& (minCardOfEachExpedition(p)[i] == 1
+						|| minCardOfEachExpedition(p)[i] == 11
+						|| minCardOfEachExpedition(p)[i] == 21
+						|| minCardOfEachExpedition(p)[i] == 31
+						|| minCardOfEachExpedition(p)[i] == 41)) {
 					counter++;
 					ourSelection[countSelect] += (y + 1);
 					countSelect++;
-
-				} else if (getRoundNo() > 2 && getCardsAvailableInDisplay()[y] != minCardOfEachExpedition(p)[i] && getCardsAvailableInDisplay()[y] - minCardOfEachExpedition(p)[i] < 5 && getCardsAvailableInDisplay()[y] - minCardOfEachExpedition(p)[i] > 0 && categorizeCards(getCardsAvailableInDisplay()[y]) == categorizeCards(minCardOfEachExpedition(p)[i])) {
+				} else if (getCardsAvailableInDisplay()[y] - minCardOfEachExpedition(p)[i] < 5
+						&& getCardsAvailableInDisplay()[y] - minCardOfEachExpedition(p)[i] > 0
+						&& categorizeCards(getCardsAvailableInDisplay()[y]) == categorizeCards(minCardOfEachExpedition(p)[i])) {
+					pointsToBeObtained += pointCounter(getCardsAvailableInDisplay()[y]);
 					counter++;
 					ourSelection[countSelect] += (y + 1);
 					countSelect++;
 				}
+				 List selectList = List.of(ourSelection);
+
+				if (getCardsAvailableInDisplay()[y] - opponentsBestCards[i] < 8
+						&& categorizeCards(opponentsBestCards[i]) == categorizeCards(getCardsAvailableInDisplay()[y])
+						&& !selectList.contains(y)) disCard = y;
+				else if (getCardsAvailableInDisplay()[y] < minCardOfEachExpedition(p)[i]
+						&& categorizeCards(getCardsAvailableInDisplay()[y]) == categorizeCards(minCardOfEachExpedition(p)[i])
+						&& !selectList.contains(y)) disCard = y;
+
 			}
-
 		}
+
 		Arrays.sort(ourSelection);
 		int retval=0;
-		for (int digit: ourSelection){
-			retval *=10;
-			retval +=digit;
-		}
-		int disCard=0;
-		int [] opponentsBestCards=new int[5];
-		for (int i=0;i<5;i++){
-			opponentsBestCards[i] = minCardOfEachExpedition(1)[i];
-			for (int y=0; y<getCardsAvailableInDisplay().length;y++){
-				if (opponentsBestCards[i]-getCardsAvailableInDisplay()[y]<5 && categorizeCards(opponentsBestCards[i])== categorizeCards(getCardsAvailableInDisplay()[y])){
-					disCard = y;
-				}
-			}
+		for (int digit: ourSelection) {
+			retval *= 10;
+			retval += digit;
 		}
 		retval = Integer.parseInt(String.valueOf(retval) +String.valueOf(disCard));
-		int [] whatToDo = new int[]{counter, retval};
-		System.out.println("We are in heuristic \n");
-		System.out.println("This is what to do array" + Arrays.toString(whatToDo));
-		System.out.println("This is our selection" + Arrays.toString(ourSelection));
-		return whatToDo;
+//		System.out.println("We are in heuristic \n");
+//		System.out.println("pOINTS TO BE OBTAINED" + pointsToBeObtained);
+//		int [] whatToDo = new int[]{counter,retval,pointsToBeObtained};
+//		System.out.println("This is what to do array" + Arrays.toString(whatToDo));
+		return new int[]{counter, retval,pointsToBeObtained};
+	}
+//	System.out.println("We are in heuristic \n");
+//		System.out.println("pOINTS TO BE OBTAINED" + pointsToBeObtained);
+//		System.out.println("This is what to do array" + Arrays.toString(whatToDo));
+//		System.out.println("This is our selection" + Arrays.toString(ourSelection));
+
+	public int  minimax ( LostCitiesRivals2PGameState gs ,byte[] cardsAvailable , int depth, boolean maxPlayer, int player){
+		int evaluation=0;
+		if (depth == 0 || gs.getRoundNo()>DISTRIBUTE_GOLD_TIMES_FACTOR) return heuristic(player)[2]; //if depth is 0 or game over
+		if (maxPlayer){
+			int maxEvaluation  = Integer.MIN_VALUE;
+			for (int i=0; i <getCardsAvailableInDisplay().length;i++){
+				evaluation = minimax(gs,gs.getCardsAvailableInDisplay(),depth-1,false, player);
+				maxEvaluation = max(maxEvaluation,evaluation);
+			}
+			return maxEvaluation;
+		}
+		else{
+			int minEval = Integer.MAX_VALUE;
+			for (int i =0; i <getCardsAvailableInDisplay().length;i++){
+				evaluation = minimax(gs,gs.getCardsAvailableInDisplay(),depth-1,true,player);
+				minEval = min(minEval,evaluation);
+
+			}
+			return minEval;
+		}
 	}
 
 }
